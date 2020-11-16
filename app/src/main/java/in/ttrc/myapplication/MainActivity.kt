@@ -8,27 +8,25 @@ import android.widget.ProgressBar
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.dash.DashMediaSource
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 
 class MainActivity : AppCompatActivity() , Player.EventListener {
 
     private lateinit var simpleExoplayer: SimpleExoPlayer
     private var playbackPosition: Long = 0
-    private val mp4Url = "https://html5demos.com/assets/dizzy.mp4"
+    private val mp4Url = "https://videos.files.wordpress.com/3cgpJk8F/4-create-a-website-using-bootstrap-create-images-using-canva_hd.mp4"
     private val dashUrl = "https://storage.googleapis.com/wvmedia/clear/vp9/tears/tears_uhd.mpd"
-    private val urlList = listOf(mp4Url to "default", dashUrl to "dash")
 
     private var exoplayerView: PlayerView?=null
     private var progressBar: ProgressBar?=null
-
-    private val dataSourceFactory: DataSource.Factory by lazy {
-        DefaultDataSourceFactory(this, "exoplayer-sample")
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +49,8 @@ class MainActivity : AppCompatActivity() , Player.EventListener {
 
     private fun initializePlayer() {
         simpleExoplayer = SimpleExoPlayer.Builder(this).build()
-        val randomUrl = urlList.random()
-        preparePlayer(randomUrl.first, randomUrl.second)
+        //preparePlayer(mp4Url,"default")
+        preparePlayer(dashUrl,"dash")
         exoplayerView?.player = simpleExoplayer
         simpleExoplayer.seekTo(playbackPosition)
         simpleExoplayer.playWhenReady = true
@@ -60,12 +58,13 @@ class MainActivity : AppCompatActivity() , Player.EventListener {
     }
 
     private fun buildMediaSource(uri: Uri, type: String): MediaSource {
+        val userAgent = "exoplayer-demo"
         return if (type == "dash") {
-            DashMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri)
+            DashMediaSource.Factory(DefaultHttpDataSourceFactory(userAgent))
+                .createMediaSource(uri)
         } else {
-            ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(uri)
+            ProgressiveMediaSource.Factory(DefaultHttpDataSourceFactory(userAgent))
+                .createMediaSource(uri)
         }
     }
 
